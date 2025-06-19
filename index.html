@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Jump Game</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/monolith.min.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="img/dash.png">
+  <script type="module">
+    import * as PIXI from 'https://cdn.jsdelivr.net/npm/pixi.js@7.2.4/dist/pixi.mjs';
+    window.PIXI = PIXI;
+  </script>
+</head>
+<body>
+  <canvas id="background-canvas"></canvas>
+  <div id="pixi-container"></div>
+
+  <!-- Color Picker (на старте) -->
+  <div id="color-picker-container"></div>
+
+  <script src="lib/pickr.min.js"></script>
+  <script type="module" src="main.js"></script>
+</body>
+</html>

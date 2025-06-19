@@ -1,0 +1,29 @@
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  z-index: 0;
+}
+
+#pixi-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+#color-picker-container {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  pointer-events: auto;
+}
