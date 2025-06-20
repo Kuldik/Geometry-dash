@@ -1,64 +1,52 @@
-// objects/player.js
-
-import { GRAVITY, JUMP_FORCE, LONG_JUMP_HOLD, GROUND_Y } from '../utils/constants.js';
-import * as PIXI from '/node_modules/pixi.js/dist/pixi.mjs';
-
+// ✅ objects/Player.js
 
 export class Player {
-  constructor(app, texture) {
-    this.app = app;
-    this.size = 64; // размер персонажа
-    this.sprite = new PIXI.Sprite(texture);
+    constructor(app) {
+        this.app = app;
 
-    // Центрируем спрайт
-    this.sprite.anchor.set(0.5);
-    this.sprite.width = this.size;
-    this.sprite.height = this.size;
-    this.sprite.position.set(150, GROUND_Y - this.size / 2);
+        const texture = PIXI.Texture.from('img/dash.png');
+        this.sprite = new PIXI.Sprite(texture);
+        this.sprite.anchor.set(0.5);
+        this.sprite.width = 60;
+        this.sprite.height = 60;
 
-    this.vy = 0;
-    this.isJumping = false;
-    this.isAlive = true;
-    this.rotationTarget = 0;
+        this.sprite.x = 100;
+        this.sprite.y = app.screen.height - 100;
+        this.app.stage.addChild(this.sprite);
 
-    app.stage.addChild(this.sprite);
-  }
-
-  jump(isHeld = false) {
-    if (!this.isJumping) {
-      this.vy = isHeld ? LONG_JUMP_HOLD : JUMP_FORCE;
-      this.isJumping = true;
-      this.rotationTarget += Math.PI / 2;
-    }
-  }
-
-  update() {
-    if (!this.isAlive) return;
-
-    this.vy += GRAVITY;
-    this.sprite.y += this.vy;
-
-    // Приземление
-    if (this.sprite.y >= GROUND_Y - this.size / 2) {
-      this.sprite.y = GROUND_Y - this.size / 2;
-      this.vy = 0;
-      this.isJumping = false;
+        this.velocityY = 0;
+        this.gravity = 0.5;
+        this.jumpForce = -12;
+        this.isJumping = false;
+        this.rotationAngle = 0;
     }
 
-    // Плавное вращение к целевому значению
-    this.sprite.rotation += (this.rotationTarget - this.sprite.rotation) * 0.2;
-  }
+    jump(isSpaceHeld) {
+        if (!this.isJumping) {
+            const force = isSpaceHeld ? this.jumpForce * 1.5 : this.jumpForce;
+            this.velocityY = force;
+            this.isJumping = true;
 
-  die() {
-    this.isAlive = false;
-  }
+            this.rotationAngle += Math.PI / 2;
+            gsap.to(this.sprite, {
+                rotation: this.rotationAngle,
+                duration: 0.3,
+                ease: "power1.out"
+            });
+        }
+    }
 
-  reset() {
-    this.sprite.y = GROUND_Y - this.size / 2;
-    this.sprite.rotation = 0;
-    this.vy = 0;
-    this.rotationTarget = 0;
-    this.isJumping = false;
-    this.isAlive = true;
-  }
+    update(groundManager) {
+        this.velocityY += this.gravity;
+        this.sprite.y += this.velocityY;
+
+        const groundY = groundManager.getGroundYAt(this.sprite.x);
+        const bottomY = this.sprite.y + this.sprite.height / 2;
+
+        if (bottomY >= groundY) {
+            this.sprite.y = groundY - this.sprite.height / 2;
+            this.velocityY = 0;
+            this.isJumping = false;
+        }
+    }
 }

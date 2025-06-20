@@ -1,28 +1,22 @@
-// utils/score.js
-
 export class Score {
-  constructor() {
-    this.score = 0;
-    this.best = parseInt(localStorage.getItem('best-score')) || 0;
-  }
-
-  add() {
-    this.score++;
-    if (this.score > this.best) {
-      this.best = this.score;
-      localStorage.setItem('best-score', this.best);
+    constructor() {
+        this.score = 0;
+        this.highScore = parseInt(localStorage.getItem('highScore')) || 0;
     }
-  }
 
-  reset() {
-    this.score = 0;
-  }
+    add() {
+        this.score++;
+        if (this.score > this.highScore) {
+            this.highScore = this.score;
+            localStorage.setItem('highScore', this.highScore);
+        }
+    }
 
-  get current() {
-    return this.score;
-  }
+    get current() {
+        return this.score;
+    }
 
-  get high() {
-    return this.best;
-  }
+    reset() {
+        this.score = 0;
+    }
 }

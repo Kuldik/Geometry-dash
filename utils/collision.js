@@ -1,13 +1,11 @@
-// utils/collision.js
-
 export function checkCollision(player, obstacle) {
-  const a = player.sprite;
-  const b = obstacle.sprite;
+  if (!player || !obstacle) return false;
+  if (!player.x || !player.width || !obstacle.x || !obstacle.width) return false;
 
   return (
-    a.x - a.width / 2 < b.x + b.width &&
-    a.x + a.width / 2 > b.x &&
-    a.y - a.height / 2 < b.y + b.height &&
-    a.y + a.height / 2 > b.y
+    player.x - player.width / 2 < obstacle.x + obstacle.width &&
+    player.x + player.width / 2 > obstacle.x &&
+    player.y - player.height / 2 < obstacle.y + obstacle.height &&
+    player.y + player.height / 2 > obstacle.y
   );
 }
