@@ -6,7 +6,7 @@ export class GroundManager {
         this.container = new PIXI.Container();
         this.segments = [];
         this.lastY = GROUND_BASE_Y;
-        this.speed = 4;
+        this.speed = 5;
 
         app.stage.addChild(this.container);
         this.generateInitialSegments();
@@ -20,7 +20,8 @@ export class GroundManager {
     }
 
     addSegment(x) {
-        const delta = Math.floor(Math.random() * 3 - 1) * GROUND_VARIATION;
+        const change = Math.random() < 0.3 ? (Math.random() < 0.5 ? -1 : 1) : 0;
+        const delta = change * GROUND_VARIATION;
         const newY = Math.max(200, Math.min(this.app.screen.height - 50, this.lastY + delta));
         this.lastY = newY;
 
@@ -30,6 +31,7 @@ export class GroundManager {
         seg.endFill();
         seg.x = x;
         seg.y = newY;
+        
 
         this.container.addChild(seg);
         this.segments.push(seg);
@@ -43,6 +45,7 @@ export class GroundManager {
         this.segments = this.segments.filter(seg => {
             if (seg.x + GROUND_SEGMENT_WIDTH < 0) {
                 this.container.removeChild(seg);
+                seg.destroy();
                 return false;
             }
             return true;
@@ -53,13 +56,17 @@ export class GroundManager {
         }
     }
 
-    getGroundYAt(x) {
+    getGroundY(x) {
         for (let seg of this.segments) {
             if (x >= seg.x && x < seg.x + GROUND_SEGMENT_WIDTH) {
                 return seg.y;
             }
         }
         return GROUND_BASE_Y;
+    }
+
+    getGroundYAt(x) {
+        return this.getGroundY(x);
     }
 
     destroy() {

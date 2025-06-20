@@ -1,5 +1,7 @@
 export const OBSTACLE_SPEED = 5;
-export const OBSTACLE_INTERVAL = 2000;
+export function getRandomObstacleInterval() {
+    return Math.floor(Math.random() * (2000 - 900 + 1)) + 900;
+}
 export const WIN_SCORE = 15;
 
 export const GROUND_SEGMENT_WIDTH = 80;
