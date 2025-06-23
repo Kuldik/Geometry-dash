@@ -13,11 +13,38 @@ export async function createGameScene(app, onWin, onLose, playerColor = 0xff0000
         app.stage.addChild(gameContainer);
         app.gameContainer = gameContainer;
 
-        const bg = new PIXI.Graphics();
-        bg.beginFill(0xF5F5F5);
-        bg.drawRect(0, 0, app.screen.width, app.screen.height);
-        bg.endFill();
-        gameContainer.addChild(bg);
+        // 🕵️️🎥 Video background
+        const video = document.createElement('video');
+        video.src = 'video/loop.mp4';
+        video.loop = true;
+        video.muted = true;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.style.display = 'none';
+        document.body.appendChild(video);
+        await video.play();
+
+        const videoTexture = PIXI.Texture.from(video);
+        const videoSprite = new PIXI.Sprite(videoTexture);
+        videoSprite.width = app.screen.width;
+        videoSprite.height = app.screen.height;
+        gameContainer.addChild(videoSprite);
+
+        // 🎵 Audio setup
+        const winSound = new Audio('sounds/yippeeeeeeeeeeeeee.mp3');
+        const failSound = new Audio('sounds/spongebob-fail.mp3');
+        const coinSound = new Audio('sounds/coin.mp3');
+        const deathSound = new Audio('sounds/death.mp3');
+        winSound.volume = 0.7;
+        failSound.volume = 0.7;
+        coinSound.volume = 0.3;
+        deathSound.volume = 1;
+
+        // 🎵 Фоновая музыка
+        const backgroundMusic = new Audio('sounds/Pizza.mp3');
+        backgroundMusic.loop = true;
+        backgroundMusic.volume = 0.3;
+        backgroundMusic.play();
 
         const groundManager = new GroundManager(app);
 
@@ -38,7 +65,6 @@ export async function createGameScene(app, onWin, onLose, playerColor = 0xff0000
         const player = new Player(app);
         player.sprite.tint = playerColor;
         gameContainer.addChild(player.sprite);
-        console.log('[Player] Initialized with color:', playerColor);
 
         let isSpaceHeld = false;
         const handleKeyDown = (e) => {
@@ -62,8 +88,8 @@ export async function createGameScene(app, onWin, onLose, playerColor = 0xff0000
 
         let obstacleTimer = 0;
         let obstacles = [];
-
         let nextObstacleInterval = getRandomObstacleInterval();
+
         const gameLoop = (delta) => {
             try {
                 player.update(groundManager);
@@ -79,18 +105,23 @@ export async function createGameScene(app, onWin, onLose, playerColor = 0xff0000
                 }
 
                 obstacles = obstacles.filter(obs => {
-                  obs.update(); 
-                  if (obs.isOutOfScreen()) {
-                      score.add();
-                      scoreLabel.text = `SCORE: ${score.current}`;
-                      gameContainer.removeChild(obs.sprite);
-                      obs.destroy();
-                      return false;
-                  }
-                  return true;
-              });
+                    obs.update();
+                    if (obs.isOutOfScreen()) {
+                        score.add();
+                        scoreLabel.text = `SCORE: ${score.current}`;
+                        coinSound.currentTime = 0;
+                        coinSound.play();
+
+                        gameContainer.removeChild(obs.sprite);
+                        obs.destroy();
+                        return false;
+                    }
+                    return true;
+                });
 
                 if (obstacles.some(obs => checkCollision(player.sprite, obs.sprite))) {
+                    deathSound.currentTime = 0;
+                    deathSound.play();
                     endGame(false);
                 } else if (score.current >= WIN_SCORE) {
                     endGame(true);
@@ -100,31 +131,43 @@ export async function createGameScene(app, onWin, onLose, playerColor = 0xff0000
                 endGame(false);
             }
         };
-        const winSound = new Audio('sounds/yippeeeeeeeeeeeeee.mp3');
-        const failSound = new Audio('sounds/spongebob-fail.mp3');
-        const endGame = (won) => {
-          app.ticker.remove(gameLoop);
-          canvas.removeEventListener('keydown', handleKeyDown);
-          canvas.removeEventListener('keyup', handleKeyUp);
-          gsap.killTweensOf(player.sprite);
-          obstacles.forEach(obs => {
-              gameContainer.removeChild(obs.sprite);
-              obs.destroy();
-          });
-          app.stage.removeChild(gameContainer);
-          gameContainer.destroy({ children: true });
 
-          // ▶️ Проигрывание звука в зависимости от результата
-          if (won) {
-              winSound.currentTime = 0;
-              winSound.play();
-              onWin();
-          } else {
-              failSound.currentTime = 0;
-              failSound.play();
-              onLose();
-          }
-      };
+        const endGame = (won) => {
+            app.ticker.remove(gameLoop);
+            canvas.removeEventListener('keydown', handleKeyDown);
+            canvas.removeEventListener('keyup', handleKeyUp);
+            gsap.killTweensOf(player.sprite);
+
+            obstacles.forEach(obs => {
+                gameContainer.removeChild(obs.sprite);
+                obs.destroy();
+            });
+
+            app.stage.removeChild(gameContainer);
+            gameContainer.destroy({ children: true });
+
+            backgroundMusic.pause();
+            backgroundMusic.currentTime = 0;
+
+            // 💾 Сохраняем текущий результат
+            localStorage.setItem('lastScore', score.current);
+            const best = parseInt(localStorage.getItem('bestScore') || '0', 10);
+            if (score.current > best) {
+                localStorage.setItem('bestScore', score.current);
+            }
+
+            if (won) {
+                winSound.currentTime = 0;
+                winSound.play();
+                onWin();
+            } else {
+                failSound.currentTime = 0;
+                failSound.play();
+                onLose();
+            }
+        };
+
+
 
         app.ticker.add(gameLoop);
         console.log('[Scene] Game scene loaded successfully');

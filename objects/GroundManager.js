@@ -22,20 +22,30 @@ export class GroundManager {
     addSegment(x) {
         const change = Math.random() < 0.3 ? (Math.random() < 0.5 ? -1 : 1) : 0;
         const delta = change * GROUND_VARIATION;
-        const newY = Math.max(200, Math.min(this.app.screen.height - 50, this.lastY + delta));
+
+        const maxGroundTop = this.app.screen.height * 0.6; // земля не выше 60% высоты (то есть нижние 40%)
+        const minGroundTop = this.app.screen.height - 50;  // минимум 50px высоты
+
+        // первый сегмент — в самом низу
+        if (this.segments.length === 0) {
+            this.lastY = this.app.screen.height;
+        }
+
+        const proposedY = this.lastY + delta;
+        const newY = Math.max(maxGroundTop, Math.min(minGroundTop, proposedY));
         this.lastY = newY;
 
         const seg = new PIXI.Graphics();
-        seg.beginFill(0xAAAAAA);
+        seg.beginFill(0x4b629c);
         seg.drawRect(0, 0, GROUND_SEGMENT_WIDTH, this.app.screen.height - newY);
         seg.endFill();
         seg.x = x;
         seg.y = newY;
-        
 
         this.container.addChild(seg);
         this.segments.push(seg);
     }
+
 
     update() {
         let lastSegment = this.segments[this.segments.length - 1];

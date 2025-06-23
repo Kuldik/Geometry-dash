@@ -35,6 +35,7 @@ export class Player {
             });
 
             this.jumpSound.currentTime = 0;
+            this.jumpSound.volume = 0.1;
             this.jumpSound.play();
         }
 
